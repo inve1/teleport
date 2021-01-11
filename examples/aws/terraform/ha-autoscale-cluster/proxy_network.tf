@@ -207,6 +207,7 @@ resource "aws_lb_target_group" "proxy_web_acm" {
 
   health_check {
     path = "/web/login"
+    protocol = "HTTPS"
   }
 }
 
