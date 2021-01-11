@@ -602,7 +602,7 @@ type WebToken interface {
 	SetUser(user string)
 	// String returns the text representation of this token
 	String() string
-
+	// V1 returns the current version of the resource
 	V1() *WebTokenV1
 }
 
@@ -693,7 +693,7 @@ func (r *WebTokenV1) CheckAndSetDefaults() error {
 	return r.Metadata.CheckAndSetDefaults()
 }
 
-// V1 returns the V1 version of this token.
+// V1 returns the current version of this token.
 func (r *WebTokenV1) V1() *WebTokenV1 {
 	return r
 }
@@ -718,7 +718,7 @@ func MarshalWebToken(token WebToken, opts ...MarshalOption) ([]byte, error) {
 	case V1:
 		value, ok := token.(tokenV1)
 		if !ok {
-			return nil, trace.BadParameter("don't know how to marshal session %v", V1)
+			return nil, trace.BadParameter("don't know how to marshal web token %v", V1)
 		}
 		v1 := value.V1()
 		if !cfg.PreserveResourceID {
@@ -771,7 +771,7 @@ func GetWebTokenSchema() string {
 	return fmt.Sprintf(V2SchemaTemplate, MetadataSchema, WebTokenSpecV1Schema, "")
 }
 
-// WebTokenSpecV1Schema is JSON schema for cert authority V2
+// WebTokenSpecV1Schema is JSON schema for the web token V1
 const WebTokenSpecV1Schema = `{
   "type": "object",
   "additionalProperties": false,
@@ -786,10 +786,10 @@ const WebTokenSpecV1Schema = `{
 // Check validates the request.
 func (r *GetWebTokenRequest) Check() error {
 	if r.User == "" {
-		return trace.BadParameter("user name missing")
+		return trace.BadParameter("user name is missing")
 	}
 	if r.Token == "" {
-		return trace.BadParameter("token missing")
+		return trace.BadParameter("token is missing")
 	}
 	return nil
 }
@@ -797,7 +797,7 @@ func (r *GetWebTokenRequest) Check() error {
 // Check validates the request.
 func (r *DeleteWebTokenRequest) Check() error {
 	if r.Token == "" {
-		return trace.BadParameter("token missing")
+		return trace.BadParameter("token is missing")
 	}
 	return nil
 }
@@ -808,10 +808,10 @@ func (r *NewWebSessionRequest) CheckAndSetDefaults() error {
 		return trace.BadParameter("user name is required")
 	}
 	if len(r.Roles) == 0 {
-		return trace.BadParameter("roles are required")
+		return trace.BadParameter("roles is required")
 	}
 	if len(r.Traits) == 0 {
-		return trace.BadParameter("traits are required")
+		return trace.BadParameter("traits is required")
 	}
 	if r.SessionTTL == 0 {
 		r.SessionTTL = defaults.CertDuration
@@ -829,6 +829,6 @@ type NewWebSessionRequest struct {
 	// Traits optionally lists role traits
 	Traits map[string][]string
 	// SessionTTL optionally specifies the session time-to-live.
-	// If left unspecified, default certification duration is used.
+	// If left unspecified, the default certifice duration is used.
 	SessionTTL time.Duration
 }
